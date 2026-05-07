@@ -2,7 +2,10 @@ pipeline {
     agent any
 
     environment {
-        SONAR_SCANNER_HOME = tool 'SonarScanner' 
+        SONAR_SCANNER_HOME = tool 'SonarScanner'
+        DOCKER_HUB_USER = "riza239" // <-- À CHANGER
+        IMAGE_NAME = "app-flask-tp4"
+        REGISTRY_CREDS = "-creds" // L'ID des credentials créés dans Jenkins
     }
 
     stages {
@@ -33,6 +36,31 @@ pipeline {
         stage("Quality Gate") {
             steps {
                 waitForQualityGate abortPipeline: true
+            }
+        }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER} ."
+                sh "docker tag ${DOCKER_HUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER} ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
+            }
+        }
+
+        stage('Image Scanning (Trivy)') {
+            steps {
+                // Scan de l'image. On ne bloque le pipeline que si c'est critique
+                sh "trivy image --severity HIGH,CRITICAL ${DOCKER_HUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}"
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${REGISTRY_CREDS}", usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh "echo ${PASS} | docker login -u ${USER} --password-stdin"
+                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}"
+                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
+                }
             }
         }
     }
