@@ -5,7 +5,7 @@ pipeline {
         SONAR_SCANNER_HOME = tool 'SonarScanner'
         DOCKER_HUB_USER = "riza239" // <-- À CHANGER
         IMAGE_NAME = "app-flask-tp4"
-        REGISTRY_CREDS = "-creds" // L'ID des credentials créés dans Jenkins
+        REGISTRY_CREDS = "dockerhub-creds" // L'ID des credentials créés dans Jenkins
     }
 
     stages {
