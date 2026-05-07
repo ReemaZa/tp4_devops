@@ -1,40 +1,26 @@
 pipeline {
-    agent {
-        // Utilise un conteneur Python pour exécuter les étapes
-        docker { 
-            image 'python:3.9-slim' 
-        }
-    }
+    agent any
 
     environment {
-        // 'SonarScanner' est le nom défini dans Manage Jenkins > Tools
         SONAR_SCANNER_HOME = tool 'SonarScanner' 
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Récupère le code selon la config du Job Jenkins
-                checkout scm
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
-                // On installe les dépendances dans l'agent Docker
-                sh 'pip install -r requirements.txt'
+                // On utilise python3 et pip3 installés à l'étape 1
+                sh 'pip3 install -r requirements.txt --break-system-packages'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                sh 'python -m pytest test_app.py'
+                sh 'python3 -m pytest test_app.py'
             }
         }
 
         stage('Static Analysis') {
             steps {
-                // 'SonarQube' est le nom défini dans Manage Jenkins > System
                 withSonarQubeEnv('SonarQube') { 
                     sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner \
                     -Dsonar.projectKey=Flask_App_TP4 \
@@ -46,9 +32,7 @@ pipeline {
 
         stage("Quality Gate") {
             steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: true
-                }
+                waitForQualityGate abortPipeline: true
             }
         }
     }
