@@ -1,20 +1,27 @@
 pipeline {
-    agent any
+    agent {
+        // Utilise un conteneur Python pour exécuter les étapes
+        docker { 
+            image 'python:3.9-slim' 
+        }
+    }
 
     environment {
-        // Nom de la configuration configurée dans Manage Jenkins > System
+        // 'SonarScanner' est le nom défini dans Manage Jenkins > Tools
         SONAR_SCANNER_HOME = tool 'SonarScanner' 
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/votre-repo/app-flask.git'
+                // Récupère le code selon la config du Job Jenkins
+                checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
+                // On installe les dépendances dans l'agent Docker
                 sh 'pip install -r requirements.txt'
             }
         }
@@ -27,7 +34,8 @@ pipeline {
 
         stage('Static Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') { // 'SonarQube' est le nom du serveur configuré dans Jenkins
+                // 'SonarQube' est le nom défini dans Manage Jenkins > System
+                withSonarQubeEnv('SonarQube') { 
                     sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner \
                     -Dsonar.projectKey=Flask_App_TP4 \
                     -Dsonar.sources=. \
@@ -39,7 +47,6 @@ pipeline {
         stage("Quality Gate") {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
-                    // Attend que SonarQube finisse l'analyse et renvoie le statut
                     waitForQualityGate abortPipeline: true
                 }
             }
