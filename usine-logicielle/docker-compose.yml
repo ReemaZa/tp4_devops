@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins_tp4
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - devops_net
+
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube_tp4
+    ports:
+      - "9000:9000"
+    networks:
+      - devops_net
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+
+networks:
+  devops_net:
+    driver: bridge
+
+volumes:
+  jenkins_home:
