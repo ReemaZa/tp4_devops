@@ -21,13 +21,16 @@ pipeline {
             }
         }
 
+  
         stage('Static Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') { 
                     sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner \
                     -Dsonar.projectKey=Flask_App_TP4 \
                     -Dsonar.sources=. \
-                    -Dsonar.language=py"
+                    -Dsonar.language=py \
+                    -Dsonar.exclusions=**/*.yaml,**/*.tf,test_app.py \
+                    -Dsonar.python.coverage.reportPaths=coverage.xml"
                 }
             }
         }
