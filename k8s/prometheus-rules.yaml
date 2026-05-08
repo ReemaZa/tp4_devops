@@ -5,16 +5,15 @@ metadata:
   namespace: monitoring
   labels:
     release: monitoring-stack
-spec:
-groups:
-- name: flask.rules
-  rules:
-  - alert: FlaskServiceMissing
-    # "Si la métrique up pour l'app flask n'existe plus"
-    expr: absent(up{app="flask"}) == 1
-    for: 1m
-    labels:
-      severity: critical
-    annotations:
-      summary: "L'application Flask a disparu"
-      description: "Le déploiement a été supprimé ou le service est introuvable."
+spec:                 # <--- IL MANQUAIT CETTE LIGNE
+  groups:             # <--- 'groups' doit être décalé (indenté) sous 'spec'
+  - name: flask.rules
+    rules:
+    - alert: FlaskServiceMissing
+      expr: absent(up{app="flask"}) == 1
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "L'application Flask a disparu"
+        description: "Le déploiement a été supprimé ou le service est introuvable."
