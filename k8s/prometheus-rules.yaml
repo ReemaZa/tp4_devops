@@ -10,7 +10,7 @@ spec:                 # <--- IL MANQUAIT CETTE LIGNE
   - name: flask.rules
     rules:
     - alert: FlaskServiceMissing
-      expr: absent(up{app="flask"}) == 1
+      expr: absent(up{service="flask-service"}) == 1
       for: 1m
       labels:
         severity: critical
