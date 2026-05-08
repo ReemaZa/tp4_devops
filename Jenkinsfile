@@ -102,8 +102,7 @@ pipeline {
             }
         }
 
-          }
-        }
+        
     }
     
     // Optionnel : Nettoyage des images locales pour ne pas saturer le disque
