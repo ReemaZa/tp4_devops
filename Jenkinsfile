@@ -71,36 +71,40 @@ pipeline {
             }
         }
 
-        stage('Deploy App & Services') {
+        stage('Deploy App & Monitoring') {
             steps {
-                // 1. Installation des dépendances Python pour Ansible
+                // 1. Dépendances Python pour Ansible
                 sh '/usr/bin/python3.13 -m pip install kubernetes --break-system-packages'
                 sh 'ansible-galaxy collection install kubernetes.core'
                 
-                // 2. Déploiement des Pods via Ansible
+                // 2. Déploiement des Pods (Deployment) via Ansible
                 dir('ansible') {
                     sh "ansible-playbook -i inventory.ini deploy.yml -e 'docker_image=${DOCKER_HUB_USER}/${IMAGE_NAME}:${BUILD_NUMBER}'"
                 }
 
-                // 3. CRÉATION AUTOMATIQUE DU SERVICE (Ce qui te manquait)
-                echo "Creating Kubernetes Service..."
-                sh 'kubectl apply -f k8s/service.yaml'
+                // 3. Application de TOUTE la configuration K8s (Service, Monitoring, Alertes)
+                echo "Applying K8s manifests from folder..."
+                // On applique tout le dossier k8s d'un coup
+                sh 'kubectl apply -f k8s/'
             }
         }
 
-        stage('Verify & Check Access') {
+        stage('Verify & Observability Check') {
             steps {
                 echo "Waiting for pods to be ready..."
-                // On attend que les pods soient bien "Running"
                 sh 'kubectl wait --for=condition=ready pod -l app=flask -n flask-prod --timeout=60s'
                 
-                echo "Listing resources in flask-prod:"
-                sh 'kubectl get all -n flask-prod'
+                echo "Verifying Monitoring Resources:"
+                // On vérifie que nos nouveaux objets sont bien créés
+                sh 'kubectl get servicemonitor -n monitoring'
+                sh 'kubectl get prometheusrules -n monitoring'
                 
-                // Test de connectivité interne
-                sh 'curl -s http://host.docker.internal:30001 || echo "Internal connection check done"'
+                echo "Check internal app endpoint:"
+                sh 'curl -s http://host.docker.internal:30001/metrics || echo "Metrics endpoint not ready"'
             }
         }
+
+        
 
         
     }

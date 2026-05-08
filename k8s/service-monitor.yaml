@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flask-app-monitor
+  namespace: monitoring
+  labels:
+    release: monitoring-stack # Très important pour que Prometheus le détecte
+spec:
+  selector:
+    matchLabels:
+      app: flask # Doit correspondre au label de ton service Flask
+  endpoints:
+  - port: http # Nom du port défini dans ton service
+    interval: 15s
