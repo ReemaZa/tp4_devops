@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flask-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring-stack
+spec:
+  groups:
+  - name: flask.rules
+    rules:
+    - alert: FlaskServiceDown
+      expr: up{job="flask-app"} == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "L'application Flask est DOWN"
+        description: "Le service Flask ne répond plus depuis plus de 2 minutes dans le cluster."

@@ -11,4 +11,5 @@ spec:
       app: flask # Doit correspondre au label de ton service Flask
   endpoints:
   - port: http # Nom du port défini dans ton service
+    path: /metrics
     interval: 15s

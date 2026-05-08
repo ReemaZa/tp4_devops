@@ -3,11 +3,14 @@ kind: Service
 metadata:
   name: flask-service
   namespace: flask-prod
+  labels:            # <--- AJOUT IMPORTANT : Pour être découvert par le ServiceMonitor
+    app: flask
 spec:
   selector:
     app: flask
   ports:
-    - protocol: TCP
+    - name: http     # <--- AJOUT IMPORTANT : Un nom pour que Prometheus s'y retrouve
+      protocol: TCP
       port: 80
       targetPort: 5000
       nodePort: 30001
