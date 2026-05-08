@@ -6,13 +6,15 @@ metadata:
   labels:
     release: monitoring-stack
 spec:
-  groups:
-  - name: flask.rules
-    rules:
-    - alert: FlaskServiceDown
-      expr: up{service="flask-service"} == 0  # <--- Utilise le nom exact du service      for: 2m
-      labels:
-        severity: critical
-      annotations:
-        summary: "L'application Flask est DOWN"
-        description: "Le service Flask ne répond plus depuis plus de 2 minutes dans le cluster."
+groups:
+- name: flask.rules
+  rules:
+  - alert: FlaskServiceMissing
+    # "Si la métrique up pour l'app flask n'existe plus"
+    expr: absent(up{app="flask"}) == 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "L'application Flask a disparu"
+      description: "Le déploiement a été supprimé ou le service est introuvable."
