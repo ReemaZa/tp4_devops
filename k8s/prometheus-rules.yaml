@@ -10,8 +10,7 @@ spec:
   - name: flask.rules
     rules:
     - alert: FlaskServiceDown
-      expr: up{job="flask-app"} == 0
-      for: 2m
+      expr: up{service="flask-service"} == 0  # <--- Utilise le nom exact du service      for: 2m
       labels:
         severity: critical
       annotations:
