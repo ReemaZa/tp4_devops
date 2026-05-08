@@ -62,6 +62,36 @@ pipeline {
                 }
             }
         }
+        stage('Infrastructure Provisioning (Terraform)') {
+            steps {
+                dir('terraform') {
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+
+        stage('Deploy App (Ansible)') {
+            steps {
+                // On s'assure que la collection K8s est là
+                sh 'ansible-galaxy collection install kubernetes.core'
+                
+                dir('ansible') {
+                    // C'est ici qu'on place la commande !
+                    sh "ansible-playbook -i inventory.ini deploy.yml -e 'docker_image=riza239/app-flask-tp4:${BUILD_NUMBER}'"
+                }
+            }
+        }
+
+        stage('Smoke Test') {
+            steps {
+                echo "Waiting for app to be ready..."
+                sh 'sleep 20'
+                // On vérifie si le service répond
+                sh 'kubectl get svc -n flask-prod'
+                sh 'curl -f http://host.docker.internal:30001 || echo "App not reachable yet"'
+            }
+        }
     }
     
     // Optionnel : Nettoyage des images locales pour ne pas saturer le disque
