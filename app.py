@@ -6,7 +6,7 @@ app = Flask(__name__)
 # Définition d'une métrique personnalisée : Compteur de requêtes
 REQUEST_COUNT = Counter(
     'flask_app_requests_total', 
-    'Nombre total de requêtes reçues par l'application Flask',
+    "Nombre total de requêtes reçues par l'application Flask",
     ['method', 'endpoint', 'http_status']
 )
 
